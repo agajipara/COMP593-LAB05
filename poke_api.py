@@ -1,35 +1,51 @@
-'''
-Library for interacting with the PokeAPI.
-https://pokeapi.co/
-'''
-import requests
+""" 
+Description: 
+  Creates a new PasteBin paste that contains a list of abilities 
+  for a specified Pokemon
 
-POKE_API_URL = 'https://pokeapi.co/api/v2/pokemon/'
+Usage:
+  python pokemon_paste.py poke_name
+
+Parameters:
+  poke_name = Pokemon name
+"""
+import sys
+import poke_api
+import pastebin_api
 
 def main():
-    # Test out the get_pokemon_info() function
-    # Use breakpoints to view returned dictionary
-    poke_info = get_pokemon_info("Rockruff")
-    return
+    poke_name = get_pokemon_name()
+    poke_info = poke_api.get_pokemon_info(poke_name)
+    if poke_info is not None:
+        paste_title, paste_body = get_paste_data(poke_info)
+        paste_url = pastebin_api.post_new_paste(paste_title, paste_body, '1M')
+        print(paste_url)
 
-def get_pokemon_info(pokemon_name):
-    """Gets information about a specified Pokemon from the PokeAPI.
-
-    Args:
-        pokemon_name (str): Pokemon name (or Pokedex number)
+def get_pokemon_name():
+    """Gets the name of the Pokemon specified as a command line parameter.
+    Aborts script execution if no command line parameter was provided.
 
     Returns:
-        dict: Dictionary of Pokemon information, if successful. Otherwise None.
+        str: Pokemon name
     """
-    # TODO: Clean the Pokemon name parameter
+    if len(sys.argv) < 2:
+        print("Error: Please provide a Pokemon name as a command line argument.")
+        sys.exit(1)
+    return sys.argv[1]
 
-    # TODO: Build a clean URL and use it to send a GET request
+def get_paste_data(pokemon_info):
+    """Builds the title and body text for a PasteBin paste that lists a Pokemon's abilities.
 
-    # TODO: If the GET request was successful, convert the JSON-formatted message body text to a dictionary and return it
+    Args:
+        pokemon_info (dict): Dictionary of Pokemon information
 
-    # TODO: If the GET request failed, print the error reason and return None
-
-    return
+    Returns:
+        (str, str): Title and body text for the PasteBin paste
+    """    
+    title = f"{pokemon_info['name']} Abilities"
+    abilities = [ability['ability']['name'] for ability in pokemon_info['abilities']]
+    body_text = '\n'.join(abilities)
+    return (title, body_text)
 
 if __name__ == '__main__':
     main()

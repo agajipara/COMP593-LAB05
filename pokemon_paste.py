@@ -1,48 +1,27 @@
-""" 
-Description: 
-  Creates a new PasteBin paste that contains a list of abilities 
-  for a specified Pokemon
+import requests
 
-Usage:
-  python pokemon_paste.py poke_name
+POKE_API_URL = 'https://pokeapi.co/api/v2/pokemon/'
 
-Parameters:
-  poke_name = Pokemon name
-"""
-import sys
-import poke_api
-import pastebin_api
-
-def main():
-    poke_name = get_pokemon_name()
-    poke_info = poke_api.get_pokemon_info(poke_name)
-    if poke_info is not None:
-        paste_title, paste_body = get_paste_data(poke_info)
-        paste_url = pastebin_api.post_new_paste(paste_title, paste_body, '1M')
-        print(paste_url)
-
-def get_pokemon_name():
-    """Gets the name of the Pokemon specified as a command line parameter.
-    Aborts script execution if no command line parameter was provided.
-
-    Returns:
-        str: Pokemon name
-    """
-    # TODO: Function body
-    return
-
-def get_paste_data(pokemon_info):
-    """Builds the title and body text for a PasteBin paste that lists a Pokemon's abilities.
+def get_pokemon_info(pokemon_name):
+    """Gets information about a specified Pokemon from the PokeAPI.
 
     Args:
-        pokemon_info (dict): Dictionary of Pokemon information
+        pokemon_name (str): Pokemon name (or Pokedex number)
 
     Returns:
-        (str, str): Title and body text for the PasteBin paste
-    """    
-    # TODO: Build the paste title
-    # TODO: Build the paste body text
-    return # (title, body_text)
+        dict: Dictionary of Pokemon information, if successful. Otherwise None.
+    """
+    # Clean the Pokemon name parameter
+    pokemon_name = pokemon_name.lower()
 
-if __name__ == '__main__':
-    main()
+    # Build a clean URL and use it to send a GET request
+    url = POKE_API_URL + pokemon_name
+    response = requests.get(url)
+
+    # If the GET request was successful, convert the JSON-formatted message body text to a dictionary and return it
+    if response.status_code == 200:
+        return response.json()
+
+    # If the GET request failed, print the error reason and return None
+    print(f"Error: {response.status_code} - {response.reason}")
+    return None
